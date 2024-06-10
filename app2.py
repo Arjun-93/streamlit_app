@@ -6,7 +6,11 @@ import random
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from http.cookies import SimpleCookie
-
+import matplotlib.pyplot as plt
+from wordcloud import WordCloud
+import calendar
+from datetime import datetime
+feedback_df = pd.read_csv("generated_feedback_dataset_large.csv")
 st.set_page_config(layout="wide")
 
 # Constants
@@ -112,13 +116,10 @@ def render_word_cloud(feedback_df):
     plt.figure(figsize=(10, 5))
     plt.imshow(wordcloud, interpolation='bilinear')
     plt.axis('off')
-    st.pyplot(plt.gcf())
-
-import matplotlib.pyplot as plt
-from wordcloud import WordCloud
-import calendar
-from datetime import datetime
-feedback_df = pd.read_csv("generated_feedback_dataset_large.csv")
+    plot_container = st.container()
+    with plot_container:
+        st.pyplot(plt.gcf())
+    # st.pyplot(plt.gcf())
 
 # Filter products by category
 def filter_products_by_category(category):
@@ -171,17 +172,20 @@ def bar_chart_component():
     # Placeholder data for bar chart
     categories = [item['category'] for item in data['products']['data']['items']]
     counts = pd.Series(categories).value_counts()
-    st.bar_chart(counts)
+    st.bar_chart(counts,height=500)
 
 def wordcloud_component():
-    render_word_cloud(feedback_df)
+    return render_word_cloud(feedback_df)
 
 def emoji_chart_component():
-    render_emoji_chart(feedback_df)
+    return render_emoji_chart(feedback_df)
 
 
     
 def render_landing_page():
+    # if 'selected_page' not in st.session_state:
+    st.session_state.widget = 'products'
+
     with st.container():
         # Header
         st.markdown("""
@@ -234,11 +238,17 @@ def render_landing_page():
             <div><img src="https://www.streamlit.io/images/brand/streamlit-mark-color.png"></div>
             <div style="font-size: 24px; font-weight: bold;">SecondMain</div>
             <div class="nav-buttons">
-                <button>Notification</button>
-                <button>About</button>
-                <button>Settings</button>
+                <button onclick="set_page('bar_chart')">Categories</button>
+                <button onclick="set_page('cloud_image')">Brands</button>
+                <button onclick="set_page('gauge_charts')">Products</button>
             </div>
         </div>
+        <script>
+            function set_page(page) {
+                const session_state = Streamlit.sessionState;
+                session_state.selected_page = page;
+            }
+        </script>
         """, unsafe_allow_html=True)
 
         # Sidebar and main content
@@ -248,11 +258,13 @@ def render_landing_page():
             # Sidebar
             st.markdown("### Feed By")
             if st.button("Categories"):
-                st.session_state.selected_page = 'bar_chart'
+                st.session_state.widget = 'bar_chart'
             if st.button("Brands"):
-                st.session_state.selected_page = 'cloud_image'
+                st.session_state.widget = 'cloud_image'
             if st.button("Products"):
-                st.session_state.selected_page = 'gauge_charts'
+                st.session_state.widget = 'products'
+            if st.button("Sentiments"):
+                st.session_state.widget = 'gauge_charts'
             
             st.markdown("### Reports")
             st.markdown("- Categories\n- Brands\n- Products")
@@ -263,11 +275,11 @@ def render_landing_page():
         
         with col2:
             # Main content
-            if st.session_state.selected_page == 'bar_chart':
+            if st.session_state.widget == 'bar_chart':
                 bar_chart_component()
-            elif st.session_state.selected_page == 'cloud_image':
-                wordcloud_component()
-            elif st.session_state.selected_page == 'gauge_charts':
+            elif st.session_state.widget == 'cloud_image':
+                render_word_cloud(feedback_df)
+            elif st.session_state.widget == 'gauge_charts':
                 emoji_chart_component()
             else:
                 product_component()
@@ -291,25 +303,6 @@ def render_bar_chart_page():
                     <img src="https://www.streamlit.io/images/brand/streamlit-mark-color.png" alt="Mountains" style="width:100%">   
                 </div>
             </div>
-        </div>
-    """, unsafe_allow_html=True)
-
-# Function to render cloud image page
-def render_cloud_image_page():
-    st.markdown("""
-        <div class="dashboard-content">
-            <h2>Cloud Image Page</h2>
-            <!-- Cloud image rendering goes here based on dynamic data -->
-            <!-- You can use libraries like wordcloud to generate dynamic cloud images -->
-        </div>
-    """, unsafe_allow_html=True)
-
-# Function to render gauge charts page
-def render_gauge_charts_page():
-    st.markdown("""
-        <div class="dashboard-content">
-            <h2>Gauge Charts Page</h2>
-            <!-- Gauge charts rendering goes here based on dynamic data -->
         </div>
     """, unsafe_allow_html=True)
 
@@ -355,9 +348,9 @@ def main():
         st.session_state.page = 'dashboard'
 
     # Back button
-    if st.session_state.page != 'login':
-        if st.button('Back'):
-            st.session_state.page = 'login'
+    # if st.session_state.page != 'login':
+    #     if st.button('Back'):
+    #         st.session_state.page = 'login'
 
     # Login/Signup/Forgot Password logic
     if st.session_state.page == 'login':

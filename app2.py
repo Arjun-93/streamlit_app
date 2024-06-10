@@ -82,16 +82,16 @@ def send_verification_code(email):
         print(f"Error sending email: {e}")
 
 # Function to render landing page
-def filter_products_by_category(category, data):
-    # Dummy implementation, replace with actual filtering logic
-    return [item for item in data['products']['data']['items'] if item['category'] == category]
+# def filter_products_by_category(category, data):
+#     # Dummy implementation, replace with actual filtering logic
+#     return [item for item in data['products']['data']['items'] if item['category'] == category]
 
-def product_component(data):
+def product_component():
     # Render selectbox
     category = st.selectbox('Select Category', sorted(set(item['category'] for item in data['products']['data']['items'])))
     
     # Filter products by selected category
-    filtered_products = filter_products_by_category(category, data)
+    filtered_products = filter_products_by_category(category)
     
     # Render products container
     # st.write("### Products")
@@ -105,7 +105,7 @@ def product_component(data):
             st.write("---")
     
 
-def render_landing_page(data):
+def render_landing_page():
     with st.container():
         # Header
         st.markdown("""
@@ -182,7 +182,7 @@ def render_landing_page(data):
         with col2:
             # Main content
             # st.markdown("## Landing Page")
-            product_component(data)
+            product_component()
 
 # # Dummy data for demonstration
 # data = {
@@ -250,9 +250,9 @@ with open('products.json', 'r') as file:
     data = json.load(file)
 
 # Function to filter products by category
-# def filter_products_by_category(category):
-#     filtered_products = [item for item in data['products']['data']['items'] if item['category'] == category]
-#     return filtered_products
+def filter_products_by_category(category):
+    filtered_products = [item for item in data['products']['data']['items'] if item['category'] == category]
+    return filtered_products
 
 # Main function
 def main():
@@ -376,7 +376,7 @@ def main():
 
     elif st.session_state.page == 'dashboard' and st.session_state.authenticated:
         if st.session_state.selected_page == 'landing':
-            render_landing_page(data)
+            render_landing_page()
         elif st.session_state.selected_page == 'bar_chart':
             render_bar_chart_page()
         elif st.session_state.selected_page == 'cloud_image':

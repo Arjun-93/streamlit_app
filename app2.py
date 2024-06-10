@@ -86,6 +86,31 @@ def send_verification_code(email):
 #     # Dummy implementation, replace with actual filtering logic
 #     return [item for item in data['products']['data']['items'] if item['category'] == category]4
 
+# Create the word cloud
+def render_word_cloud(feedback_df):
+    text = " ".join(feedback_df['Feedback'])
+    wordcloud = WordCloud(width=800, height=400, background_color='white').generate(text)
+    plt.figure(figsize=(10, 5))
+    plt.imshow(wordcloud, interpolation='bilinear')
+    plt.axis('off')
+    plt.show()
+
+def render_emoji_chart(feedback_df):
+    emojis = {1: '😠', 2: '😞', 3: '😐', 4: '😊', 5: '😍'}
+    rating_counts = feedback_df['Rating'].value_counts(normalize=True) * 100
+    fig, ax = plt.subplots(figsize=(10, 6))
+    bars = ax.barh(rating_counts.index.map(emojis), rating_counts.values, color=['red', 'orange', 'yellow', 'lightgreen', 'green'])
+    ax.set_xlabel('Percentage of Users')
+    ax.set_ylabel('Rating')
+    ax.set_title('Percentage of Users by Rating')
+    for bar, (emoji, percentage) in zip(bars, zip(rating_counts.index.map(emojis), rating_counts.values)):
+        width = bar.get_width()
+        ax.text(width + 1, bar.get_y() + bar.get_height() / 2, f'{percentage:.1f}%', va='center', fontsize=12, weight='bold')
+        ax.text(width / 2, bar.get_y() + bar.get_height() / 2, emoji, ha='center', va='center', fontsize=40)
+    plt.xlim(0, max(rating_counts.values) + 10)
+    plt.gca().invert_yaxis()
+    plt.show()
+
 import matplotlib.pyplot as plt
 from wordcloud import WordCloud
 import calendar

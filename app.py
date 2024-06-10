@@ -166,9 +166,9 @@ def render_landing_page():
             <div class="dashboard-content">
                 <h2>Landing Page</h2>
             </div>
-        </div>
-                
+        </div>    
     """, unsafe_allow_html=True)
+
      # Render selectbox container
     st.markdown('<div class="selectbox-container">', unsafe_allow_html=True)
     category = st.selectbox('Select Category', sorted(set(item['category'] for item in data['products']['data']['items'])))

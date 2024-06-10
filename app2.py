@@ -84,7 +84,65 @@ def send_verification_code(email):
 # Function to render landing page
 # def filter_products_by_category(category, data):
 #     # Dummy implementation, replace with actual filtering logic
-#     return [item for item in data['products']['data']['items'] if item['category'] == category]
+#     return [item for item in data['products']['data']['items'] if item['category'] == category]4
+
+import matplotlib.pyplot as plt
+from wordcloud import WordCloud
+import calendar
+from datetime import datetime
+feedback_df = pd.read_csv("generated_feedback_dataset_large.csv")
+
+# Filter products by category
+def filter_products_by_category(category):
+    return [item for item in data['products']['data']['items'] if item['category'] == category]
+
+# Product component
+def product_component():
+    # Render selectbox
+    category = st.selectbox('Select Category', sorted(set(item['category'] for item in data['products']['data']['items'])))
+    
+    # Filter products by selected category
+    filtered_products = filter_products_by_category(category)
+    
+    # Render products container
+    product_container = st.container()
+    with product_container:
+        for product in filtered_products:
+            st.write(f"**ID:** {product['id']}")
+            st.write(f"**Name:** {product['name']}")
+            st.write(f"**Description:** {product['description']}")
+            st.write(f"**Price:** ${product['price']}")
+            st.write("---")
+
+# Render bar chart page
+def render_bar_chart_page():
+    # Placeholder data for bar chart
+    categories = [item['category'] for item in data['products']['data']['items']]
+    counts = pd.Series(categories).value_counts()
+
+    st.bar_chart(counts)
+
+# Render cloud image page
+def render_cloud_image_page():
+    # Placeholder data for word cloud
+    text = " ".join(item['name'] for item in data['products']['data']['items'])
+    wordcloud = WordCloud(width=800, height=400).generate(text)
+
+    plt.figure(figsize=(10, 5))
+    plt.imshow(wordcloud, interpolation='bilinear')
+    plt.axis('off')
+    st.pyplot(plt)
+
+# Render gauge charts page
+def render_gauge_charts_page():
+    # Placeholder emoji chart for feedback
+    st.write("### Feedback Emoji Chart")
+    st.date_input("Select Date Range", [])
+    feedback_agg = feedback_df.groupby('Rating').size().reset_index(name='counts')
+
+    emojis = {1: '😠', 2: '😞', 3: '😐', 4: '😊', 5: '😍'}
+    for _, row in feedback_agg.iterrows():
+        st.write(f"{emojis.get(row['Rating'], '')} {row['counts']} reviews")
 
 def product_component():
     # Render selectbox
@@ -171,7 +229,13 @@ def render_landing_page():
         with col1:
             # Sidebar
             st.markdown("### Feed By")
-            st.markdown("- Categories\n- Brands\n- Products")
+            if st.button("Categories"):
+                st.session_state.selected_page = 'bar_chart'
+            if st.button("Brands"):
+                st.session_state.selected_page = 'cloud_image'
+            if st.button("Products"):
+                st.session_state.selected_page = 'gauge_charts'
+            
             st.markdown("### Reports")
             st.markdown("- Categories\n- Brands\n- Products")
             st.markdown("### Competitors")
@@ -355,7 +419,7 @@ def main():
                 st.success('Password reset successfully! Please log in.')
                 st.session_state.page = 'login'
 
-    elif st.session_state.page == 'dashboard' and st.session_state.authenticated:
+    elif st.session_state.page == 'dashboard' and st.session_state.authenticated: 
         if st.session_state.selected_page == 'landing':
             render_landing_page()
         elif st.session_state.selected_page == 'bar_chart':

@@ -385,6 +385,8 @@ def main():
                 st.session_state.authenticated = True
                 set_cookie('authenticated', 'True')
                 st.session_state.page = 'dashboard'
+                st.session_state.selected_page = 'landing'
+                st.experimental_rerun()
             else:
                 st.error('Invalid email or password')
 

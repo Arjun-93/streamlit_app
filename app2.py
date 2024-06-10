@@ -1,3 +1,5 @@
+
+
 import streamlit as st
 import pandas as pd
 import os
@@ -10,6 +12,7 @@ import matplotlib.pyplot as plt
 from wordcloud import WordCloud
 import calendar
 from datetime import datetime
+
 feedback_df = pd.read_csv("generated_feedback_dataset_large.csv")
 st.set_page_config(layout="wide")
 
@@ -92,9 +95,13 @@ def send_verification_code(email):
 
 # Create the word cloud
 emojis = {1: '😠', 2: '😞', 3: '😐', 4: '😊', 5: '😍'}
+def render_emoji_chart(feedback_df, selected_date=None):
+    st.write("\n### Sentiment Analysis")
 
-# Create the emoji chart with emojis on the y-axis
-def render_emoji_chart(feedback_df):
+    # Filter the dataframe based on the selected date
+    if selected_date:
+        feedback_df = feedback_df[feedback_df['date'] == selected_date]
+
     rating_counts = feedback_df['Rating'].value_counts(normalize=True) * 100
     fig, ax = plt.subplots(figsize=(10, 6))
     bars = ax.barh(rating_counts.index.map(emojis), rating_counts.values, color=['red', 'orange', 'yellow', 'lightgreen', 'green'])
@@ -111,6 +118,9 @@ def render_emoji_chart(feedback_df):
 
 # Create the word cloud
 def render_word_cloud(feedback_df):
+    # Create the word cloud
+    # write title 
+    st.write("\n### Word Cloud")
     text = " ".join(feedback_df['Feedback'])
     wordcloud = WordCloud(width=800, height=400, background_color='white').generate(text)
     plt.figure(figsize=(10, 5))
@@ -172,13 +182,23 @@ def bar_chart_component():
     # Placeholder data for bar chart
     categories = [item['category'] for item in data['products']['data']['items']]
     counts = pd.Series(categories).value_counts()
+    st.write("### Categories")
     st.bar_chart(counts,height=500)
 
 def wordcloud_component():
     return render_word_cloud(feedback_df)
 
-def emoji_chart_component():
-    return render_emoji_chart(feedback_df)
+def emoji_chart_component(feedback_df):
+    # Streamlit part to create the select box and display the chart
+    st.title('Sentiment Analysis Emoji Chart')
+
+    date_options = ['All'] + feedback_df['Date'].unique().tolist()
+    selected_date = st.selectbox('Select Date', date_options)
+
+    if selected_date == 'All':
+        selected_date = None
+
+    return render_emoji_chart(feedback_df, selected_date)
 
 
     
@@ -238,9 +258,9 @@ def render_landing_page():
             <div><img src="https://www.streamlit.io/images/brand/streamlit-mark-color.png"></div>
             <div style="font-size: 24px; font-weight: bold;">SecondMain</div>
             <div class="nav-buttons">
-                <button onclick="set_page('bar_chart')">Categories</button>
-                <button onclick="set_page('cloud_image')">Brands</button>
-                <button onclick="set_page('gauge_charts')">Products</button>
+                <button onclick="set_page('bar_chart')">Notification</button>
+                <button onclick="set_page('cloud_image')">Account</button>
+                <button onclick="set_page('gauge_charts')">Settings</button>
             </div>
         </div>
         <script>
@@ -280,7 +300,7 @@ def render_landing_page():
             elif st.session_state.widget == 'cloud_image':
                 render_word_cloud(feedback_df)
             elif st.session_state.widget == 'gauge_charts':
-                emoji_chart_component()
+                emoji_chart_component(feedback_df)
             else:
                 product_component()
 

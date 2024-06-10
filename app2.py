@@ -87,16 +87,10 @@ def send_verification_code(email):
 #     return [item for item in data['products']['data']['items'] if item['category'] == category]4
 
 # Create the word cloud
-def render_word_cloud(feedback_df):
-    text = " ".join(feedback_df['Feedback'])
-    wordcloud = WordCloud(width=800, height=400, background_color='white').generate(text)
-    plt.figure(figsize=(10, 5))
-    plt.imshow(wordcloud, interpolation='bilinear')
-    plt.axis('off')
-    plt.show()
+emojis = {1: '😠', 2: '😞', 3: '😐', 4: '😊', 5: '😍'}
 
+# Create the emoji chart with emojis on the y-axis
 def render_emoji_chart(feedback_df):
-    emojis = {1: '😠', 2: '😞', 3: '😐', 4: '😊', 5: '😍'}
     rating_counts = feedback_df['Rating'].value_counts(normalize=True) * 100
     fig, ax = plt.subplots(figsize=(10, 6))
     bars = ax.barh(rating_counts.index.map(emojis), rating_counts.values, color=['red', 'orange', 'yellow', 'lightgreen', 'green'])
@@ -109,7 +103,16 @@ def render_emoji_chart(feedback_df):
         ax.text(width / 2, bar.get_y() + bar.get_height() / 2, emoji, ha='center', va='center', fontsize=40)
     plt.xlim(0, max(rating_counts.values) + 10)
     plt.gca().invert_yaxis()
-    plt.show()
+    st.pyplot(fig)
+
+# Create the word cloud
+def render_word_cloud(feedback_df):
+    text = " ".join(feedback_df['Feedback'])
+    wordcloud = WordCloud(width=800, height=400, background_color='white').generate(text)
+    plt.figure(figsize=(10, 5))
+    plt.imshow(wordcloud, interpolation='bilinear')
+    plt.axis('off')
+    st.pyplot(plt.gcf())
 
 import matplotlib.pyplot as plt
 from wordcloud import WordCloud
@@ -144,30 +147,7 @@ def render_bar_chart_page():
     # Placeholder data for bar chart
     categories = [item['category'] for item in data['products']['data']['items']]
     counts = pd.Series(categories).value_counts()
-
     st.bar_chart(counts)
-
-# Render cloud image page
-def render_cloud_image_page():
-    # Placeholder data for word cloud
-    text = " ".join(item['name'] for item in data['products']['data']['items'])
-    wordcloud = WordCloud(width=800, height=400).generate(text)
-
-    plt.figure(figsize=(10, 5))
-    plt.imshow(wordcloud, interpolation='bilinear')
-    plt.axis('off')
-    st.pyplot(plt)
-
-# Render gauge charts page
-def render_gauge_charts_page():
-    # Placeholder emoji chart for feedback
-    st.write("### Feedback Emoji Chart")
-    st.date_input("Select Date Range", [])
-    feedback_agg = feedback_df.groupby('Rating').size().reset_index(name='counts')
-
-    emojis = {1: '😠', 2: '😞', 3: '😐', 4: '😊', 5: '😍'}
-    for _, row in feedback_agg.iterrows():
-        st.write(f"{emojis.get(row['Rating'], '')} {row['counts']} reviews")
 
 def product_component():
     # Render selectbox
@@ -186,8 +166,21 @@ def product_component():
             st.write(f"**Description:** {product['description']}")
             st.write(f"**Price:** ${product['price']}")
             st.write("---")
-    
 
+def bar_chart_component():
+    # Placeholder data for bar chart
+    categories = [item['category'] for item in data['products']['data']['items']]
+    counts = pd.Series(categories).value_counts()
+    st.bar_chart(counts)
+
+def wordcloud_component():
+    render_word_cloud(feedback_df)
+
+def emoji_chart_component():
+    render_emoji_chart(feedback_df)
+
+
+    
 def render_landing_page():
     with st.container():
         # Header
@@ -270,7 +263,14 @@ def render_landing_page():
         
         with col2:
             # Main content
-            product_component()
+            if st.session_state.selected_page == 'bar_chart':
+                bar_chart_component()
+            elif st.session_state.selected_page == 'cloud_image':
+                wordcloud_component()
+            elif st.session_state.selected_page == 'gauge_charts':
+                emoji_chart_component()
+            else:
+                product_component()
 
 # Function to render bar chart page
 def render_bar_chart_page():
@@ -447,17 +447,10 @@ def main():
     elif st.session_state.page == 'dashboard' and st.session_state.authenticated: 
         if st.session_state.selected_page == 'landing':
             render_landing_page()
-        elif st.session_state.selected_page == 'bar_chart':
-            render_bar_chart_page()
-        elif st.session_state.selected_page == 'cloud_image':
-            render_cloud_image_page()
-        elif st.session_state.selected_page == 'gauge_charts':
-            render_gauge_charts_page()
     else:
         # Handle authentication or redirect to login page
         st.session_state.authenticated = False
         set_cookie('authenticated', 'False')
         
-
 if __name__ == "__main__":
     main()

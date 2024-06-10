@@ -181,26 +181,7 @@ def render_landing_page():
         
         with col2:
             # Main content
-            # st.markdown("## Landing Page")
             product_component()
-
-# # Dummy data for demonstration
-# data = {
-#     'products': {
-#         'data': {
-#             'items': [
-#                 {'id': 1, 'name': 'Product 1', 'description': 'Description 1', 'price': 10.0, 'category': 'Category A'},
-#                 {'id': 2, 'name': 'Product 2', 'description': 'Description 2', 'price': 20.0, 'category': 'Category B'},
-#                 {'id': 3, 'name': 'Product 3', 'description': 'Description 3', 'price': 30.0, 'category': 'Category A'},
-#                 # Add more products as needed
-#             ]
-#         }
-#     }
-# }
-
-# # Call the function to render the landing page
-# render_landing_page(data)
-
 
 # Function to render bar chart page
 def render_bar_chart_page():
